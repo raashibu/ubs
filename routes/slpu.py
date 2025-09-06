@@ -1,17 +1,18 @@
-def simulate_game(board_size, snakes=None, ladders=None):
+# routes/slpu.py
+import random
+from flask import Blueprint, Response
+
+slpu_bp = Blueprint("slpu", __name__)
+
+def simulate_game(board_size):
     players = [0, 0]
     dice_mode = ["normal", "normal"]
     rolls = []
-
     turn = 0
     last_square = board_size
 
-    snakes = snakes or {}
-    ladders = ladders or {}
-
     while True:
         player = turn % 2
-
         if dice_mode[player] == "normal":
             roll = random.randint(1, 6)
             move = roll
@@ -23,26 +24,23 @@ def simulate_game(board_size, snakes=None, ladders=None):
             if roll == 1:
                 dice_mode[player] = "normal"
 
-        # record the actual die face, not the move
-        rolls.append(str(roll))
-
-        # move player
+        rolls.append(str(roll))  # record die face, not move
         players[player] += move
 
-        # bounce back
         if players[player] > last_square:
             players[player] = last_square - (players[player] - last_square)
 
-        # snakes/ladders
-        if players[player] in snakes:
-            players[player] = snakes[players[player]]
-        elif players[player] in ladders:
-            players[player] = ladders[players[player]]
-
-        # win check
         if players[player] == last_square:
             break
 
         turn += 1
 
     return "".join(rolls)
+
+
+@slpu_bp.route("/slpu", methods=["POST"])
+def slpu():
+    board_size = 16 * 16
+    rolls = simulate_game(board_size)
+    svg_output = f'<svg xmlns="http://www.w3.org/2000/svg"><text>{rolls}</text></svg>'
+    return Response(svg_output, mimetype="image/svg+xml")
