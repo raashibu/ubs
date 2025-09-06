@@ -1,10 +1,4 @@
-# slpu.py
-import random
-from flask import Blueprint, request, Response
-
-slpu_bp = Blueprint("slpu", __name__)
-
-def simulate_game(board_size):
+def simulate_game(board_size, snakes=None, ladders=None):
     players = [0, 0]
     dice_mode = ["normal", "normal"]
     rolls = []
@@ -12,41 +6,43 @@ def simulate_game(board_size):
     turn = 0
     last_square = board_size
 
+    snakes = snakes or {}
+    ladders = ladders or {}
+
     while True:
         player = turn % 2
+
         if dice_mode[player] == "normal":
             roll = random.randint(1, 6)
+            move = roll
             if roll == 6:
                 dice_mode[player] = "power2"
-            move = roll
         else:
             roll = random.randint(1, 6)
             move = 2 ** roll
             if roll == 1:
                 dice_mode[player] = "normal"
 
-        # Move player
+        # record the actual die face, not the move
+        rolls.append(str(roll))
+
+        # move player
         players[player] += move
 
-        # Bounce back if overshoot
+        # bounce back
         if players[player] > last_square:
             players[player] = last_square - (players[player] - last_square)
 
-        # Add to rolls
-        rolls.append(str(move))
+        # snakes/ladders
+        if players[player] in snakes:
+            players[player] = snakes[players[player]]
+        elif players[player] in ladders:
+            players[player] = ladders[players[player]]
 
-        # Win condition (last player must win)
-        if players[player] == last_square and player == 1:
+        # win check
+        if players[player] == last_square:
             break
 
         turn += 1
 
     return "".join(rolls)
-
-
-@slpu_bp.route("/slpu", methods=["POST"])
-def slpu():
-    board_size = 16 * 16  # later you can parse from input SVG if needed
-    rolls = simulate_game(board_size)
-    svg_output = f'<svg xmlns="http://www.w3.org/2000/svg"><text>{rolls}</text></svg>'
-    return Response(svg_output, mimetype="image/svg+xml")
