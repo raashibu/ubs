@@ -1,5 +1,5 @@
 from flask import Flask
-from .slpu import slpu_bp
+from routes.sailing_club import sailing_bp
 
 app = Flask(__name__)
-app.register_blueprint(slpu_bp)
+app.register_blueprint(sailing_bp)
