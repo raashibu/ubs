@@ -1,7 +1,5 @@
 from flask import Flask
-from routes.trivia import trivia_bp
-from slpu import slpu_bp   # 👈 import the blueprint
+from slpu import slpu_bp   # import your blueprint from slpu.py
 
 app = Flask(__name__)
-app.register_blueprint(trivia_bp)
-app.register_blueprint(slpu_bp)  # 👈 register it
+app.register_blueprint(slpu_bp)  # register only this one
