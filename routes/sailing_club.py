@@ -1,7 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Flask, Blueprint, request, jsonify
 
+# Create a Blueprint
 sailing_bp = Blueprint("sailing_club", __name__)
 
+# Merge overlapping intervals
 def merge_intervals(intervals):
     if not intervals:
         return []
@@ -15,6 +17,7 @@ def merge_intervals(intervals):
             merged.append(current[:])
     return merged
 
+# Calculate minimum number of boats required (overlapping intervals)
 def min_boats(intervals):
     events = []
     for start, end in intervals:
@@ -27,9 +30,11 @@ def min_boats(intervals):
         max_boats = max(max_boats, boats)
     return max_boats
 
+# Route to handle submission
 @sailing_bp.route("/sailing-club/submission", methods=["POST"])
 def sailing_submission():
     try:
+        # Get JSON body from request
         data = request.get_json(force=True)
         test_cases = data.get("testCases", [])
 
@@ -50,4 +55,14 @@ def sailing_submission():
         return jsonify({"solutions": solutions}), 200
 
     except Exception as e:
+        import traceback
+        print("Exception occurred:", e)
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
+
+# Run as standalone Flask app for testing
+if __name__ == "__main__":
+    app = Flask(__name__)
+    app.register_blueprint(sailing_bp)
+
+    app.run(debug=True)
